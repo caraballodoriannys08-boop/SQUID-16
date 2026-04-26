@@ -6,9 +6,13 @@
     ║     Versión: 3.0 - HUB Multicolor                                ║
     ║     Creado por: @abraham_etts                                    ║
     ║     Instagram: @abraham_etts                                     ║
-    ║                                                                  ║
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local rootPart = character:WaitForChild("HumanoidRootPart")                                                          ║
     ╚══════════════════════════════════════════════════════════════════╝
---]]
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local rootPart = character:WaitForChild("HumanoidRootPart")
 
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
