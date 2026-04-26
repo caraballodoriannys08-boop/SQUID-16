@@ -1,0 +1,421 @@
+--[[
+    ╔══════════════════════════════════════════════════════════════════╗
+    ║                                                                  ║
+    ║     🦑 SQUID5NICKNAME - INK GAME HUB 🦑                           ║
+    ║                                                                  ║
+    ║     Versión: 3.0 - HUB Multicolor                                ║
+    ║     Creado por: @abraham_etts                                    ║
+    ║     Instagram: @abraham_etts                                     ║
+    ║                                                                  ║
+    ╚══════════════════════════════════════════════════════════════════╝
+--]]
+
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local rootPart = character:WaitForChild("HumanoidRootPart")
+
+-- Variables
+local godmodeActive = false
+local autoWinActive = false
+local skySquidActive = false
+local noBanActive = false
+local flyActive = false
+local espActive = false
+local bodyVel = nil
+
+-- ========== CREAR GUI ==========
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "SQUID_HUB"
+screenGui.Parent = player.PlayerGui
+screenGui.ResetOnSpawn = false
+
+-- Barra superior
+local topBar = Instance.new("Frame")
+topBar.Parent = screenGui
+topBar.Size = UDim2.new(0, 400, 0, 38)
+topBar.Position = UDim2.new(0.5, -200, 0, 0)
+topBar.BackgroundColor3 = Color3.fromRGB(10, 5, 25)
+topBar.BackgroundTransparency = 0.05
+topBar.BorderSizePixel = 0
+
+local gradientTop = Instance.new("UIGradient")
+gradientTop.Parent = topBar
+gradientTop.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 80, 120)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(150, 50, 200)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 100, 255))
+})
+
+local title = Instance.new("TextLabel")
+title.Parent = topBar
+title.Size = UDim2.new(0, 280, 0, 38)
+title.Position = UDim2.new(0, 10, 0, 0)
+title.Text = "🦑 SQUID5NICKNAME | INK GAME"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.BackgroundTransparency = 1
+title.TextSize = 14
+
+local instaLabel = Instance.new("TextLabel")
+instaLabel.Parent = topBar
+instaLabel.Size = UDim2.new(0, 120, 0, 38)
+instaLabel.Position = UDim2.new(0, 290, 0, 0)
+instaLabel.Text = "📷 @abraham_etts"
+instaLabel.TextColor3 = Color3.fromRGB(255, 200, 100)
+instaLabel.BackgroundTransparency = 1
+instaLabel.TextSize = 12
+
+local minimizeBtn = Instance.new("TextButton")
+minimizeBtn.Parent = topBar
+minimizeBtn.Size = UDim2.new(0, 35, 0, 34)
+minimizeBtn.Position = UDim2.new(0, 360, 0, 2)
+minimizeBtn.Text = "▼"
+minimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+minimizeBtn.BackgroundColor3 = Color3.fromRGB(60, 40, 100)
+minimizeBtn.BorderSizePixel = 0
+
+local mainMenu = Instance.new("Frame")
+mainMenu.Parent = screenGui
+mainMenu.Size = UDim2.new(0, 400, 0, 450)
+mainMenu.Position = UDim2.new(0.5, -200, 0, 38)
+mainMenu.BackgroundColor3 = Color3.fromRGB(15, 10, 35)
+mainMenu.BackgroundTransparency = 0.05
+mainMenu.BorderSizePixel = 0
+
+local menuGradient = Instance.new("UIGradient")
+menuGradient.Parent = mainMenu
+menuGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 10, 50)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(80, 30, 130)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(40, 20, 80))
+})
+
+-- Pestañas
+local tabBar = Instance.new("Frame")
+tabBar.Parent = mainMenu
+tabBar.Size = UDim2.new(0, 400, 0, 40)
+tabBar.Position = UDim2.new(0, 0, 0, 0)
+tabBar.BackgroundColor3 = Color3.fromRGB(25, 15, 55)
+tabBar.BackgroundTransparency = 0.3
+
+local contentContainer = Instance.new("Frame")
+contentContainer.Parent = mainMenu
+contentContainer.Size = UDim2.new(0, 400, 0, 405)
+contentContainer.Position = UDim2.new(0, 0, 0, 45)
+contentContainer.BackgroundTransparency = 1
+
+local tabs = {}
+
+-- Animación colores
+task.spawn(function()
+    local hue = 0
+    while true do
+        task.wait(0.05)
+        hue = (hue + 0.008) % 1
+        local color = Color3.fromHSV(hue, 1, 0.8)
+        if title then title.TextColor3 = color end
+        if instaLabel then instaLabel.TextColor3 = color end
+    end
+end)
+
+local function createTab(name, icon)
+    local tabBtn = Instance.new("TextButton")
+    tabBtn.Parent = tabBar
+    tabBtn.Size = UDim2.new(0, 80, 0, 40)
+    tabBtn.Position = UDim2.new(0, (#tabs) * 80, 0, 0)
+    tabBtn.Text = icon .. " " .. name
+    tabBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+    tabBtn.BackgroundColor3 = Color3.fromRGB(25, 15, 55)
+    tabBtn.BorderSizePixel = 0
+    tabBtn.TextSize = 12
+    
+    local tabContent = Instance.new("ScrollingFrame")
+    tabContent.Parent = contentContainer
+    tabContent.Size = UDim2.new(0, 400, 0, 405)
+    tabContent.Position = UDim2.new(0, 0, 0, 0)
+    tabContent.BackgroundTransparency = 1
+    tabContent.BorderSizePixel = 0
+    tabContent.ScrollBarThickness = 4
+    tabContent.Visible = false
+    tabContent.CanvasSize = UDim2.new(0, 0, 0, 0)
+    
+    local layout = Instance.new("UIListLayout")
+    layout.Parent = tabContent
+    layout.Padding = UDim.new(0, 8)
+    
+    table.insert(tabs, {btn = tabBtn, content = tabContent})
+    
+    tabBtn.MouseButton1Click:Connect(function()
+        for _, t in pairs(tabs) do
+            t.content.Visible = false
+            t.btn.BackgroundColor3 = Color3.fromRGB(25, 15, 55)
+            t.btn.TextColor3 = Color3.fromRGB(200, 200, 200)
+        end
+        tabContent.Visible = true
+        tabBtn.BackgroundColor3 = Color3.fromRGB(100, 50, 150)
+        tabBtn.TextColor3 = Color3.fromRGB(255, 150, 200)
+    end)
+    
+    return tabContent
+end
+
+local function createButton(parent, text, callback)
+    local btn = Instance.new("TextButton")
+    btn.Parent = parent
+    btn.Size = UDim2.new(0, 360, 0, 40)
+    btn.Position = UDim2.new(0, 20, 0, 0)
+    btn.Text = text
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.BackgroundColor3 = Color3.fromRGB(50, 40, 80)
+    btn.BackgroundTransparency = 0.2
+    btn.BorderSizePixel = 0
+    
+    local corner = Instance.new("UICorner")
+    corner.Parent = btn
+    corner.CornerRadius = UDim.new(0, 8)
+    
+    btn.MouseButton1Click:Connect(callback)
+    return btn
+end
+
+local function createToggle(parent, text, callback)
+    local frame = Instance.new("Frame")
+    frame.Parent = parent
+    frame.Size = UDim2.new(0, 360, 0, 40)
+    frame.Position = UDim2.new(0, 20, 0, 0)
+    frame.BackgroundColor3 = Color3.fromRGB(40, 30, 65)
+    frame.BackgroundTransparency = 0.2
+    frame.BorderSizePixel = 0
+    
+    local label = Instance.new("TextLabel")
+    label.Parent = frame
+    label.Size = UDim2.new(0, 240, 0, 40)
+    label.Position = UDim2.new(0, 15, 0, 0)
+    label.Text = text
+    label.TextColor3 = Color3.fromRGB(220, 220, 220)
+    label.BackgroundTransparency = 1
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local toggleBtn = Instance.new("TextButton")
+    toggleBtn.Parent = frame
+    toggleBtn.Size = UDim2.new(0, 60, 0, 30)
+    toggleBtn.Position = UDim2.new(0, 285, 0, 5)
+    toggleBtn.Text = "OFF"
+    toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    toggleBtn.BackgroundColor3 = Color3.fromRGB(100, 70, 130)
+    toggleBtn.BorderSizePixel = 0
+    
+    local state = false
+    toggleBtn.MouseButton1Click:Connect(function()
+        state = not state
+        toggleBtn.Text = state and "ON" or "OFF"
+        toggleBtn.BackgroundColor3 = state and Color3.fromRGB(80, 180, 80) or Color3.fromRGB(100, 70, 130)
+        callback(state)
+    end)
+    
+    return frame
+end
+
+-- Crear pestañas
+local mainTab = createTab("MAIN", "🦑")
+local extrasTab = createTab("EXTRAS", "🎮")
+local socialTab = createTab("REDES", "📱")
+
+-- Pestaña MAIN
+createToggle(mainTab, "✨ GODMODE (Inmortal)", function(state)
+    godmodeActive = state
+    if state then
+        task.spawn(function()
+            while godmodeActive do
+                task.wait(0.1)
+                humanoid.Health = humanoid.MaxHealth
+                humanoid.BreakJointsOnDeath = false
+            end
+        end)
+    else
+        humanoid.BreakJointsOnDeath = true
+    end
+end)
+
+createToggle(mainTab, "🏆 AUTO WIN", function(state)
+    autoWinActive = state
+    if state then
+        task.spawn(function()
+            while autoWinActive do
+                task.wait(0.3)
+                for _, v in pairs(workspace:GetDescendants()) do
+                    local name = v.Name:lower()
+                    if name:find("win") or name:find("finish") then
+                        local cd = v:FindFirstChild("ClickDetector")
+                        if cd then fireclickdetector(cd) end
+                    end
+                end
+            end
+        end)
+    end
+end)
+
+createToggle(mainTab, "🪂 SKY SQUID", function(state)
+    skySquidActive = state
+    if state then
+        task.spawn(function()
+            while skySquidActive do
+                task.wait(0.5)
+                rootPart.Velocity = Vector3.new(0, 120, 0)
+                task.wait(0.3)
+                rootPart.Velocity = Vector3.new(0, 0, 0)
+            end
+        end)
+    end
+end)
+
+createToggle(mainTab, "🛡️ NO BAN", function(state)
+    noBanActive = state
+    if state then
+        task.spawn(function()
+            while noBanActive do
+                task.wait(3)
+                local anti = game:GetService("ReplicatedStorage"):FindFirstChild("AntiCheat")
+                if anti then anti:Destroy() end
+            end
+        end)
+    end
+end)
+
+-- Pestaña EXTRAS
+createToggle(extrasTab, "🕊️ FLY / NOCLIP", function(state)
+    flyActive = state
+    if state then
+        bodyVel = Instance.new("BodyVelocity")
+        bodyVel.MaxForce = Vector3.new(100000, 100000, 100000)
+        bodyVel.Parent = rootPart
+        
+        for _, part in pairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+        
+        local flyConnection
+        flyConnection = game:GetService("RunService").RenderStepped:Connect(function()
+            if not flyActive then
+                flyConnection:Disconnect()
+                return
+            end
+            local moveDir = Vector3.new()
+            local input = game:GetService("UserInputService")
+            if input:IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + Vector3.new(0, 0, -1) end
+            if input:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir + Vector3.new(0, 0, 1) end
+            if input:IsKeyDown(Enum.KeyCode.A) then moveDir = moveDir + Vector3.new(-1, 0, 0) end
+            if input:IsKeyDown(Enum.KeyCode.D) then moveDir = moveDir + Vector3.new(1, 0, 0) end
+            if input:IsKeyDown(Enum.KeyCode.Q) then moveDir = moveDir + Vector3.new(0, 1, 0) end
+            if input:IsKeyDown(Enum.KeyCode.E) then moveDir = moveDir + Vector3.new(0, -1, 0) end
+            
+            if moveDir.Magnitude > 0 then
+                bodyVel.Velocity = rootPart.CFrame:VectorToWorldSpace(moveDir.Unit * 150)
+            else
+                bodyVel.Velocity = Vector3.new(0, 0, 0)
+            end
+        end)
+    else
+        if bodyVel then bodyVel:Destroy() end
+        for _, part in pairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true
+            end
+        end
+    end
+end)
+
+createToggle(extrasTab, "👁️ ESP", function(state)
+    espActive = state
+    if state then
+        task.spawn(function()
+            while espActive do
+                task.wait(0.5)
+                for _, v in pairs(workspace:GetDescendants()) do
+                    if v:IsA("Model") and v:FindFirstChild("Humanoid") and v ~= character then
+                        if not v:FindFirstChild("SQUID_ESP") then
+                            local hl = Instance.new("Highlight")
+                            hl.Name = "SQUID_ESP"
+                            hl.FillColor = Color3.fromRGB(255, 50, 50)
+                            hl.FillTransparency = 0.5
+                            hl.Parent = v
+                        end
+                    end
+                end
+            end
+        end)
+    else
+        for _, v in pairs(workspace:GetDescendants()) do
+            if v.Name == "SQUID_ESP" then
+                v:Destroy()
+            end
+        end
+    end
+end)
+
+-- Pestaña REDES
+local socialFrame = Instance.new("Frame")
+socialFrame.Parent = socialTab
+socialFrame.Size = UDim2.new(0, 360, 0, 150)
+socialFrame.Position = UDim2.new(0, 20, 0, 10)
+socialFrame.BackgroundColor3 = Color3.fromRGB(40, 30, 65)
+socialFrame.BackgroundTransparency = 0.3
+socialFrame.BorderSizePixel = 0
+
+local socialCorner = Instance.new("UICorner")
+socialCorner.Parent = socialFrame
+socialCorner.CornerRadius = UDim.new(0, 12)
+
+local socialTitle = Instance.new("TextLabel")
+socialTitle.Parent = socialFrame
+socialTitle.Size = UDim2.new(0, 360, 0, 35)
+socialTitle.Position = UDim2.new(0, 0, 0, 10)
+socialTitle.Text = "📱 SIGUEME EN INSTAGRAM 📱"
+socialTitle.TextColor3 = Color3.fromRGB(255, 200, 100)
+socialTitle.BackgroundTransparency = 1
+socialTitle.TextSize = 14
+
+local instaBtn = Instance.new("TextButton")
+instaBtn.Parent = socialFrame
+instaBtn.Size = UDim2.new(0, 320, 0, 50)
+instaBtn.Position = UDim2.new(0, 20, 0, 55)
+instaBtn.Text = "📷 @abraham_etts"
+instaBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+instaBtn.BackgroundColor3 = Color3.fromRGB(193, 53, 132)
+instaBtn.BorderSizePixel = 0
+
+local instaCorner = Instance.new("UICorner")
+instaCorner.Parent = instaBtn
+instaCorner.CornerRadius = UDim.new(0, 8)
+
+instaBtn.MouseButton1Click:Connect(function()
+    setclipboard("abraham_etts")
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "SQUID HUB",
+        Text = "📷 @abraham_etts copiado!",
+        Duration = 2
+    })
+end)
+
+-- Minimizar
+local minimized = false
+minimizeBtn.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    mainMenu.Visible = not minimized
+    minimizeBtn.Text = minimized and "▲" or "▼"
+end)
+
+-- Activar primera pestaña
+if tabs[1] then
+    tabs[1].btn.MouseButton1Click:Fire()
+end
+
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "🦑 SQUID HUB",
+    Text = "Script cargado | Sigue a @abraham_etts",
+    Duration = 4
+})
+
+print("🦑 SQUID HUB - Cargado | Instagram: @abraham_etts")
